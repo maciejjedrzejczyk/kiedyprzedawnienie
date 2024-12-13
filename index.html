@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prosty kalkulator przedawnienia zobowiązań podatkowych dla osób fizycznych</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: left;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        .bold {
+            font-weight: bold;
+        }
+        input[type="date"] {
+            margin: 10px 0;
+            padding: 5px;
+            width: 200px;
+        }
+        button {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .legal-basis {
+            font-size: 0.8em;
+            margin-top: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kalkulator przedawnienia zobowiązań podatkowych</h1>
+        <div>
+            <label for="eventDate">Wprowadź datę zdarzenia podatkowego:</label>
+            <input type="date" id="eventDate">
+            <button onclick="calculateCustomLimitation()">Oblicz</button>
+        </div>
+        <div id="result"></div>
+        <p class="legal-basis">
+            Podstawa prawna: <a href="https://sip.lex.pl/akty-prawne/dzu-dziennik-ustaw/ordynacja-podatkowa-16799056/art-70" target="_blank">Art. 70. - [Przedawnienie zobowiązania podatkowego] - Ordynacja podatkowa</a>
+        </p>
+    </div>
+
+    <script>
+        function calculateCustomLimitation() {
+            const eventDate = new Date(document.getElementById('eventDate').value);
+            const currentDate = new Date();
+            
+            // Obliczamy rok przedawnienia (rok zdarzenia + 6 lat)
+            const limitationYear = eventDate.getFullYear() + 6;
+            const limitationDate = new Date(limitationYear, 11, 31);
+            
+            // Obliczamy liczbę dni do przedawnienia
+            const daysToLimitation = Math.ceil((limitationDate - currentDate) / (1000 * 60 * 60 * 24));
+            
+            // Obliczamy datę, do której wszystkie zobowiązania są już niebyłe
+            const pastLimitationYear = currentDate.getFullYear() - 5;
+            const pastLimitationDate = new Date(pastLimitationYear, 11, 31);
+            
+            // Formatujemy daty
+            const formatDate = (date) => date.toLocaleDateString('pl-PL', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            const formattedEventDate = formatDate(eventDate);
+            const formattedLimitationDate = formatDate(limitationDate);
+            const formattedCurrentDate = formatDate(currentDate);
+            const formattedPastLimitationDate = formatDate(pastLimitationDate);
+            
+            // Tworzymy tekst z informacjami
+            let resultText = `
+                <p>Data zdarzenia podatkowego: <span class="bold">${formattedEventDate}</span></p>
+                <p>Dzisiejsza data: <span class="bold">${formattedCurrentDate}</span></p>
+                <p>Zobowiązanie podatkowe przedawni się dnia: <span class="bold">${formattedLimitationDate}</span></p>
+            `;
+
+            if (currentDate > limitationDate) {
+                resultText += `<p>To zobowiązanie podatkowe już się przedawniło.</p>`;
+            } else {
+                resultText += `<p>Do przedawnienia pozostało <span class="bold">${daysToLimitation}</span> dni.</p>`;
+            }
+
+            resultText += `<p>Wszystkie zobowiązania podatkowe sprzed dnia <span class="bold">${formattedPastLimitationDate}</span> są już niebyłe.</p>`;
+            
+            // Wyświetlamy tekst
+            document.getElementById('result').innerHTML = resultText;
+        }
+    </script>
+</body>
+</html>
