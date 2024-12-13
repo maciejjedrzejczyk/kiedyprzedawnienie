@@ -29,11 +29,11 @@ Kalkulator Przedawnienia Zobowiązań Podatkowych to prosta aplikacja webowa, kt
 - JavaScript
 - Docker
 - Nginx (jako serwer w kontenerze)
+- Claude 3.5 Sonnet
 
 ## Wymagania
 
-- Docker
-- Docker Compose
+- Docker lub Docker Compose
 
 ## Instrukcja uruchomienia
 
@@ -115,3 +115,27 @@ projekt/
 ## Podstawa prawna
 
 Aplikacja opiera się na Art. 70. Ordynacji podatkowej, który reguluje kwestię przedawnienia zobowiązań podatkowych. Pełny tekst artykułu jest dostępny pod linkiem umieszczonym w aplikacji.
+
+## Informacja o generowaniu treści
+
+Ten projekt został wykonany przy pomocy sztucznej inteligencji, konkretnie z wykorzystaniem modelu językowego GPT. Oto podstawowe informacje o procesie tworzenia:
+
+- Asystent AI: Claude 3.5 Sonnet
+- Język komunikacji: Polski
+- Czas trwania konwersacji: Około 2-3 godziny (szacunkowo, na podstawie długości i złożoności wątku)
+- Liczba interakcji: Około 15-20 wymian (pytanie-odpowiedź)
+
+Główne etapy tworzenia projektu z pomocą AI:
+
+1. Stworzenie podstawowej struktury aplikacji HTML/CSS/JavaScript
+2. Implementacja logiki obliczania dat przedawnienia
+3. Dodanie funkcjonalności wprowadzania własnej daty przez użytkownika
+4. Stworzenie dokumentacji projektu
+5. Przygotowanie plików do konteneryzacji (Dockerfile, docker-compose.yml)
+6. Instrukcje dotyczące tworzenia i publikacji repozytorium GitHub
+7. Dodanie informacji o licencji (Apache 2.0)
+8. Implementacja zastrzeżenia prawnego (disclaimer)
+
+Warto zauważyć, że choć kod i dokumentacja zostały wygenerowane przez AI, ostateczna weryfikacja, testowanie i wdrożenie były wykonywane przez człowieka. AI służyło jako narzędzie wspomagające proces twórczy i implementacyjny, ale nie zastępowało ludzkiego osądu i decyzji.
+
+Projekt ten stanowi przykład współpracy człowieka z AI w tworzeniu aplikacji webowej, demonstrując potencjał takich narzędzi w przyspieszaniu procesu rozwoju oprogramowania.
