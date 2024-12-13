@@ -10,6 +10,7 @@
 7. [Struktura projektu](#struktura-projektu)
 8. [Użytkowanie aplikacji](#użytkowanie-aplikacji)
 9. [Podstawa prawna](#podstawa-prawna)
+10. [Informacja o generowaniu treści](#informacja-o-generowaniu-treści)
 
 ## Opis aplikacji
 
