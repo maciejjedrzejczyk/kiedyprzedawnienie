@@ -21,124 +21,336 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kalkulator przedawnienia zobowiązań podatkowych</title>
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
+            background: #f4f6f9;
+            color: #1d1d1f;
+            padding: 1rem;
+            line-height: 1.6;
         }
-        .container {
-            text-align: left;
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            max-width: 600px;
+
+        .card {
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,.06);
+            max-width: 560px;
             width: 100%;
+            padding: 2.5rem 2rem;
         }
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
+
+        .lang-toggle {
+            display: flex;
+            justify-content: flex-end;
+            gap: .25rem;
+            margin-bottom: 1.5rem;
         }
-        p {
-            margin-bottom: 10px;
-            line-height: 1.5;
-        }
-        .bold {
-            font-weight: bold;
-        }
-        input[type="date"] {
-            margin: 10px 0;
-            padding: 5px;
-            width: 200px;
-        }
-        button {
-            padding: 5px 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
+        .lang-toggle button {
+            background: none;
+            border: 1.5px solid #ccc;
+            border-radius: .375rem;
+            padding: .25rem .6rem;
+            font-size: .8rem;
             cursor: pointer;
+            color: #555;
+            transition: all .15s;
         }
-        button:hover {
-            background-color: #45a049;
+        .lang-toggle button.active {
+            background: #1d1d1f;
+            color: #fff;
+            border-color: #1d1d1f;
         }
-        .legal-basis, .github-link {
-            font-size: 0.8em;
-            margin-top: 20px;
+
+        h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1.75rem;
+        }
+
+        .form-row { display: flex; gap: .75rem; align-items: end; flex-wrap: wrap; }
+
+        .field { display: flex; flex-direction: column; gap: .3rem; flex: 1 1 180px; }
+        .field label { font-size: .85rem; color: #555; }
+        .field input[type="date"] {
+            padding: .55rem .65rem;
+            border: 1.5px solid #ddd;
+            border-radius: .5rem;
+            font-size: .95rem;
+            color: #1d1d1f;
+            background: #fff;
+            width: 100%;
+            transition: border-color .15s;
+        }
+        .field input[type="date"]:focus { outline: none; border-color: #0071e3; }
+        .field input.error { border-color: #d30000; }
+
+        .btn {
+            padding: .55rem 1.4rem;
+            background: #0071e3;
+            color: #fff;
+            border: none;
+            border-radius: .5rem;
+            font-size: .95rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background .15s;
+            flex-shrink: 0;
+        }
+        .btn:hover { background: #005bb5; }
+
+        .error-msg { color: #d30000; font-size: .8rem; margin-top: .35rem; }
+
+        /* ---- static info line ---- */
+        .info-line {
+            margin-top: 1.25rem;
+            padding: .65rem .85rem;
+            background: #f0f4ff;
+            border-radius: .5rem;
+            font-size: .85rem;
+            color: #444;
+        }
+        .info-line .val { font-weight: 600; }
+
+        /* ---- result ---- */
+        #result { margin-top: 1.25rem; }
+        #result p { margin-bottom: .5rem; font-size: .95rem; }
+        #result .val { font-weight: 600; }
+        #result .expired { color: #bf4800; font-weight: 600; }
+        #result .remaining { color: #0071e3; font-weight: 600; }
+
+        /* ---- collapsible legal section ---- */
+        .legal {
+            margin-top: 2rem;
+            border-top: 1px solid #eee;
+            padding-top: 1.25rem;
+        }
+        .legal summary {
+            font-size: .85rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #555;
+            list-style: none;
+        }
+        .legal summary::before { content: "▸ "; }
+        .legal[open] summary::before { content: "▾ "; }
+        .legal .body {
+            margin-top: .75rem;
+            font-size: .8rem;
             color: #666;
+            line-height: 1.7;
+        }
+        .legal .body p { margin-bottom: .5rem; }
+        .legal .body a { color: #0071e3; text-decoration: none; }
+        .legal .body a:hover { text-decoration: underline; }
+
+        .footer {
+            margin-top: 1.5rem;
+            font-size: .75rem;
+            color: #999;
+            text-align: center;
+        }
+        .footer a { color: #999; }
+
+        @media (max-width: 480px) {
+            .card { padding: 1.75rem 1.25rem; }
+            h1 { font-size: 1.15rem; }
+            .form-row { flex-direction: column; }
+            .btn { width: 100%; }
+        }
+
+        /* ---- dark mode ---- */
+        @media (prefers-color-scheme: dark) {
+            body { background: #1a1a1e; color: #e5e5e7; }
+            .card { background: #2c2c2e; box-shadow: 0 2px 20px rgba(0,0,0,.3); }
+            .lang-toggle button { color: #aaa; border-color: #555; }
+            .lang-toggle button.active { background: #e5e5e7; color: #1a1a1e; border-color: #e5e5e7; }
+            .field label { color: #aaa; }
+            .field input[type="date"] { background: #3a3a3c; border-color: #555; color: #e5e5e7; }
+            .field input[type="date"]:focus { border-color: #409cff; }
+            .field input.error { border-color: #ff6961; }
+            .error-msg { color: #ff6961; }
+            .info-line { background: #3a3a3c; color: #ccc; }
+            #result .remaining { color: #409cff; }
+            #result .expired { color: #ff9f0a; }
+            .legal { border-top-color: #444; }
+            .legal summary { color: #aaa; }
+            .legal .body { color: #999; }
+            .legal .body a { color: #409cff; }
+            .btn { background: #409cff; }
+            .btn:hover { background: #0071e3; }
+            .footer { color: #666; }
+            .footer a { color: #666; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Kalkulator przedawnienia zobowiązań podatkowych</h1>
-        <div>
-            <label for="eventDate">Wprowadź datę zdarzenia podatkowego:</label>
-            <input type="date" id="eventDate">
-            <button onclick="calculateCustomLimitation()">Oblicz</button>
+    <div class="card">
+        <div class="lang-toggle">
+            <button onclick="setLang('pl')" id="btn-pl" class="active">PL</button>
+            <button onclick="setLang('en')" id="btn-en">EN</button>
         </div>
+
+        <h1 id="title"></h1>
+
+        <div class="form-row">
+            <div class="field">
+                <label id="lbl-date" for="eventDate"></label>
+                <input type="date" id="eventDate" min="1900-01-01">
+                <div id="error-msg" class="error-msg" hidden></div>
+            </div>
+            <button class="btn" id="btn-calc" onclick="calculate()"></button>
+        </div>
+
+        <div class="info-line" id="info-line"></div>
+
         <div id="result"></div>
-        <p class="legal-basis">
-            Podstawa prawna: <a href="https://sip.lex.pl/akty-prawne/dzu-dziennik-ustaw/ordynacja-podatkowa-16799056/art-70" target="_blank">Art. 70. - [Przedawnienie zobowiązania podatkowego] - Ordynacja podatkowa</a>
-        </p>
-        <p class="github-link">
-            Kod źródłowy dostępny na: <a href="https://github.com/maciejjedrzejczyk/kiedyprzedawnienie" target="_blank">GitHub</a>
-        </p>
-        <div class="disclaimer">
-            <strong>Zastrzeżenie:</strong> Wszelkie treści wyświetlane na tej stronie nie stanowią porady prawnej w rozumieniu prawa. Autor nie ponosi odpowiedzialności za wyświetlane treści. Dla uzyskania właściwych informacji rekomendowane jest skorzystanie z profesjonalnej porady prawnej.
+
+        <details class="legal">
+            <summary id="legal-title"></summary>
+            <div class="body" id="legal-body"></div>
+        </details>
+
+        <div class="footer">
+            <span id="disclaimer"></span><br>
+            <a href="https://github.com/maciejjedrzejczyk/kiedyprzedawnienie" target="_blank">GitHub</a>
         </div>
     </div>
 
     <script>
-        function calculateCustomLimitation() {
-            const eventDate = new Date(document.getElementById('eventDate').value);
-            const currentDate = new Date();
-            
-            // Obliczamy rok przedawnienia (rok zdarzenia + 6 lat)
-            const limitationYear = eventDate.getFullYear() + 6;
-            const limitationDate = new Date(limitationYear, 11, 31);
-            
-            // Obliczamy liczbę dni do przedawnienia
-            const daysToLimitation = Math.ceil((limitationDate - currentDate) / (1000 * 60 * 60 * 24));
-            
-            // Obliczamy datę, do której wszystkie zobowiązania są już niebyłe
-            const pastLimitationYear = currentDate.getFullYear() - 5;
-            const pastLimitationDate = new Date(pastLimitationYear, 11, 31);
-            
-            // Formatujemy daty
-            const formatDate = (date) => date.toLocaleDateString('pl-PL', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-
-            const formattedEventDate = formatDate(eventDate);
-            const formattedLimitationDate = formatDate(limitationDate);
-            const formattedCurrentDate = formatDate(currentDate);
-            const formattedPastLimitationDate = formatDate(pastLimitationDate);
-            
-            // Tworzymy tekst z informacjami
-            let resultText = `
-                <p>Data zdarzenia podatkowego: <span class="bold">${formattedEventDate}</span></p>
-                <p>Dzisiejsza data: <span class="bold">${formattedCurrentDate}</span></p>
-                <p>Zobowiązanie podatkowe przedawni się dnia: <span class="bold">${formattedLimitationDate}</span></p>
-            `;
-
-            if (currentDate > limitationDate) {
-                resultText += `<p>To zobowiązanie podatkowe już się przedawniło.</p>`;
-            } else {
-                resultText += `<p>Do przedawnienia pozostało <span class="bold">${daysToLimitation}</span> dni.</p>`;
-            }
-
-            resultText += `<p>Wszystkie zobowiązania podatkowe sprzed dnia <span class="bold">${formattedPastLimitationDate}</span> są już niebyłe.</p>`;
-            
-            // Wyświetlamy tekst
-            document.getElementById('result').innerHTML = resultText;
+    const T = {
+        pl: {
+            title: "Kalkulator przedawnienia zobowiązań podatkowych",
+            label: "Termin płatności podatku",
+            calc: "Oblicz",
+            paymentDate: "Termin płatności podatku:",
+            today: "Dzisiejsza data:",
+            expiresOn: "Zobowiązanie przedawni się dnia:",
+            expired: "To zobowiązanie podatkowe już się przedawniło.",
+            remaining: "Do przedawnienia pozostało {d} dni.",
+            allBefore: "Wszystkie zobowiązania z terminem płatności przed {date} są już przedawnione.",
+            errEmpty: "Wprowadź datę terminu płatności.",
+            errFuture: "Termin płatności nie może być w przyszłości.",
+            legalTitle: "Podstawa prawna i wyjaśnienie",
+            legalBody: `
+                <p>Obliczenie opiera się na <strong>Art. 70 § 1 Ordynacji podatkowej</strong> (ustawa z dnia 29 sierpnia 1997 r.), który stanowi:</p>
+                <p><em>„Zobowiązanie podatkowe przedawnia się z upływem 5 lat, licząc od końca roku kalendarzowego, w którym upłynął termin płatności podatku."</em></p>
+                <p>W praktyce oznacza to, że termin przedawnienia upływa 31 grudnia piątego roku po roku, w którym przypadał termin płatności — czyli efektywnie do 6 lat od samego terminu.</p>
+                <p><strong>Uwaga:</strong> Termin płatności podatku nie zawsze pokrywa się z datą zdarzenia podatkowego. Na przykład zobowiązanie VAT za grudzień 2019 r. ma termin płatności 25 stycznia 2020 r., co przesuwa przedawnienie o cały rok.</p>
+                <p>Kalkulator przedstawia podstawowy scenariusz. Ordynacja podatkowa przewiduje również okoliczności, które mogą <strong>zawiesić lub przerwać</strong> bieg przedawnienia (np. wszczęcie postępowania podatkowego, zabezpieczenie hipoteką, postępowanie karnoskarbowe). Takie przypadki wymagają indywidualnej analizy prawnej.</p>
+                <p>Pełny tekst: <a href="https://sip.lex.pl/akty-prawne/dzu-dziennik-ustaw/ordynacja-podatkowa-16799056/art-70" target="_blank">Art. 70 Ordynacji podatkowej – sip.lex.pl</a></p>`,
+            disclaimer: "Informacje nie stanowią porady prawnej. Skonsultuj się z doradcą podatkowym.",
+            locale: "pl-PL"
+        },
+        en: {
+            title: "Tax Obligation Limitation Calculator",
+            label: "Tax payment deadline",
+            calc: "Calculate",
+            paymentDate: "Tax payment deadline:",
+            today: "Today's date:",
+            expiresOn: "The obligation expires on:",
+            expired: "This tax obligation has already expired.",
+            remaining: "{d} days remaining until expiration.",
+            allBefore: "All tax obligations with a payment deadline before {date} have already expired.",
+            errEmpty: "Please enter a payment deadline date.",
+            errFuture: "The payment deadline cannot be in the future.",
+            legalTitle: "Legal basis & explanation",
+            legalBody: `
+                <p>This calculation is based on <strong>Article 70 § 1 of the Polish Tax Ordinance</strong> (Act of 29 August 1997), which states:</p>
+                <p><em>"A tax obligation shall expire after 5 years, counting from the end of the calendar year in which the tax payment deadline occurred."</em></p>
+                <p>In practice, the limitation period ends on December 31 of the fifth year after the year the payment was due — effectively up to 6 years from the deadline itself.</p>
+                <p><strong>Note:</strong> The tax payment deadline does not always coincide with the date of the taxable event. For example, a VAT obligation for December 2019 has a payment deadline of January 25, 2020, which shifts the expiration by a full year.</p>
+                <p>This calculator shows the basic scenario. The Tax Ordinance also provides for circumstances that may <strong>suspend or interrupt</strong> the limitation period (e.g. initiation of tax proceedings, mortgage security, fiscal criminal proceedings). Such cases require individual legal analysis.</p>
+                <p>Full text (Polish): <a href="https://sip.lex.pl/akty-prawne/dzu-dziennik-ustaw/ordynacja-podatkowa-16799056/art-70" target="_blank">Art. 70 Tax Ordinance – sip.lex.pl</a></p>`,
+            disclaimer: "This is not legal advice. Consult a qualified tax advisor.",
+            locale: "en-GB"
         }
+    };
+
+    let lang = "pl";
+    const $ = id => document.getElementById(id);
+
+    function fmtDate(d, locale) {
+        return d.toLocaleDateString(locale, { year: "numeric", month: "long", day: "numeric" });
+    }
+
+    function updateInfoLine() {
+        const t = T[lang];
+        const now = new Date();
+        const pastDate = new Date(now.getFullYear() - 6, 11, 31);
+        $("info-line").innerHTML = t.allBefore.replace("{date}", `<span class="val">${fmtDate(pastDate, t.locale)}</span>`);
+    }
+
+    function setLang(l) {
+        lang = l;
+        $("btn-pl").classList.toggle("active", l === "pl");
+        $("btn-en").classList.toggle("active", l === "en");
+        document.documentElement.lang = l;
+        const t = T[l];
+        $("title").textContent = t.title;
+        $("lbl-date").textContent = t.label;
+        $("btn-calc").textContent = t.calc;
+        $("legal-title").textContent = t.legalTitle;
+        $("legal-body").innerHTML = t.legalBody;
+        $("disclaimer").textContent = t.disclaimer;
+        document.title = t.title;
+        updateInfoLine();
+        if ($("result").innerHTML) calculate(true);
+    }
+
+    function showError(msg) {
+        $("eventDate").classList.add("error");
+        $("error-msg").textContent = msg;
+        $("error-msg").hidden = false;
+    }
+
+    function clearError() {
+        $("eventDate").classList.remove("error");
+        $("error-msg").hidden = true;
+    }
+
+    function calculate(skipHash) {
+        clearError();
+        const input = $("eventDate").value;
+        const t = T[lang];
+
+        if (!input) { showError(t.errEmpty); return; }
+
+        const eventDate = new Date(input);
+        const now = new Date();
+
+        if (eventDate > now) { showError(t.errFuture); return; }
+
+        if (!skipHash) history.replaceState(null, "", "#" + input);
+
+        const limitDate = new Date(eventDate.getFullYear() + 6, 11, 31);
+        const days = Math.ceil((limitDate - now) / 864e5);
+        const fmt = d => fmtDate(d, t.locale);
+
+        let html = `
+            <p>${t.paymentDate} <span class="val">${fmt(eventDate)}</span></p>
+            <p>${t.today} <span class="val">${fmt(now)}</span></p>
+            <p>${t.expiresOn} <span class="val">${fmt(limitDate)}</span></p>`;
+
+        html += now > limitDate
+            ? `<p class="expired">${t.expired}</p>`
+            : `<p class="remaining">${t.remaining.replace("{d}", days)}</p>`;
+
+        $("result").innerHTML = html;
+    }
+
+    // init: load from hash if present
+    setLang("pl");
+    const hash = location.hash.slice(1);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(hash)) {
+        $("eventDate").value = hash;
+        calculate(true);
+    }
     </script>
 </body>
 </html>
